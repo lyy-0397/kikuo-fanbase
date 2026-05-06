@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Yomogi&family=Rock+Salt&family=Space+Mono:wght@400;700&family=Noto+Sans+SC:wght@400;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Noto Sans SC", sans-serif;
+  --font-handwriting: "Yomogi", cursive;
+  --font-display: "Rock Salt", cursive;
+  --font-mono: "Space Mono", monospace;
+  
+  --color-candy-pink: #FF007F;
+  --color-candy-lime: #39FF14;
+  --color-candy-yellow: #FFE600;
+  --color-candy-orange: #FF5E00;
+  --color-dark-blood: #4A0000;
+  --color-dark-purple: #1A0024;
+}
+
+@layer utilities {
+  .clip-triangle {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) skewX(-2deg) }
+  40% { transform: translate(-2px, -2px) skewY(1deg) }
+  60% { transform: translate(2px, 2px) skewX(2deg) }
+  80% { transform: translate(2px, -2px) skewY(-1deg) }
+  100% { transform: translate(0) }
+}
+.hover-glitch:hover {
+  animation: glitch 0.2s infinite;
+  filter: blur(1px) contrast(150%) saturate(150%);
+}
+
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: -4px;
+  left: 0;
+  background-color: currentColor;
+  transform-origin: bottom left;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link-underline:hover::after {
+  transform: scaleX(1);
+}
+
+.btn-hover-swap {
+  transition: background-color 0.15s cubic-bezier(0.22, 1, 0.36, 1), color 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
