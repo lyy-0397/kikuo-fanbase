@@ -3,40 +3,50 @@ import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import { Settings2, X, Play, Pause, Eye, Hand, Moon, Skull, CircleDashed, TriangleAlert } from "lucide-react";
 
 export default function App() {
-  // 1. Image State Control Let user modify images dynamically
+  // 1. Image Paths - Fixed absolute paths for stability
   const [images, setImages] = useState({
-    avatar: "/kikuoworld1.jpg",
-    vinylCover1: "/kikuo1.jpg",
-    vinylCover2: "/kikuo2.jpg",
-    gallery1: "/kikuoworld1.jpg",
-    gallery2: "/kikuoworld3.jpg",
-    gallery3: "/kikuo3.jpg",
-    album1: "/kikuo1.jpg",
-    album2: "/kikuo2.jpg",
-    album3: "/kikuo3.jpg",
-    album4: "/kikuo4.jpg",
-    album5: "/kikuo5.jpg",
-    album6: "/kikuo6.jpg",
-    album7: "/kikuo7.jpg",
-    album8: "/kikuo1.jpg",
-    album9: "/kikuo2.jpg",
+    avatar: "/kikuotouxiang.png",
+    vinylCover1: "/1.png",
+    vinylCover2: "/2.png",
+    gallery1: "/nishui.png",
+    gallery2: "/3.png",
+    gallery3: "/4.png",
+    album1: "/1.png",
+    album2: "/2.png",
+    album3: "/3.png",
+    album4: "/4.png",
+    album5: "/1.png",
+    album6: "/2.png",
+    album7: "/nishui.png",
+    album8: "/3.png",
+    album9: "/4.png",
   });
 
   const [audios, setAudios] = useState({
     song1: "/kikuo-chansheng.mp3",
     song2: "/wobuzaixuexiaoderizi.mp3",
     song3: "/haohaizihehuxian.mp3",
-    song4: "/kikuo-chansheng.mp3",
+    song4: "/dongxueshenghuo.mp3",
     song5: "/wobuzaixuexiaoderizi.mp3",
     song6: "/haohaizihehuxian.mp3",
   });
 
-  const [editImages, setEditImages] = useState(images);
-  const [editAudios, setEditAudios] = useState(audios);
-  const [showPanel, setShowPanel] = useState(false);
   const [activeSongIdx, setActiveSongIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Hide browser media controls from system notification area
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.playbackState = 'none';
+      // Disable previous/next track buttons in OS
+      navigator.mediaSession.setActionHandler('play', null);
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+    }
+  }, []);
 
   const { scrollY } = useScroll();
   const heroImgY = useTransform(scrollY, [0, 1000], [0, 300]);
@@ -253,109 +263,9 @@ export default function App() {
         })}
       </div>
 
-      {/* Control Panel Toggle Button */}
-      <button 
-        onClick={() => setShowPanel(true)} 
-        className="fixed top-24 right-6 z-50 bg-candy-pink text-black p-3 rounded-full shadow-[0_0_15px_#FF007F] border-2 border-candy-pink hover:bg-black hover:text-candy-pink hover:scale-[1.1] btn-hover-swap"
-        title="Settings"
-      >
-        <Settings2 className="w-6 h-6" />
-      </button>
 
-      {/* Control Panel Sidebar */}
-      <AnimatePresence>
-        {showPanel && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-              onClick={() => setShowPanel(false)}
-            />
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full max-w-sm bg-zinc-950 border-l border-zinc-800 p-6 z-50 overflow-y-auto shadow-2xl"
-            >
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold text-candy-lime font-handwriting tracking-wider">🌟 媒体控制台</h3>
-                <button onClick={() => setShowPanel(false)} className="text-zinc-400 hover:text-white transition-colors">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
 
-              <div className="flex flex-col gap-5">
-                <div className="border-b border-zinc-800 pb-2 mb-2">
-                  <h4 className="text-sm font-bold text-candy-pink tracking-widest uppercase">🖼️ 图像设置</h4>
-                </div>
-                {[
-                  { key: 'avatar', label: '歌手头像' },
-                  { key: 'vinylCover1', label: '代表专辑封面 1' },
-                  { key: 'vinylCover2', label: '代表专辑封面 2' },
-                  { key: 'gallery1', label: '画廊图片 1 (大图)' },
-                  { key: 'gallery2', label: '画廊图片 2' },
-                  { key: 'gallery3', label: '画廊图片 3' },
-                  { key: 'album1', label: '专辑 1 封面' },
-                  { key: 'album2', label: '专辑 2 封面' },
-                  { key: 'album3', label: '专辑 3 封面' },
-                  { key: 'album4', label: '专辑 4 封面' },
-                  { key: 'album5', label: '专辑 5 封面' },
-                  { key: 'album6', label: '专辑 6 封面' },
-                  { key: 'album7', label: '专辑 7 封面' },
-                  { key: 'album8', label: '专辑 8 封面' },
-                  { key: 'album9', label: '专辑 9 封面' },
-                ].map(({ key, label }) => (
-                  <div key={key}>
-                    <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-widest">{label}</label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-candy-pink focus:ring-1 focus:ring-candy-pink transition-all"
-                      value={editImages[key as keyof typeof editImages]} 
-                      onChange={(e) => setEditImages({...editImages, [key]: e.target.value})} 
-                    />
-                  </div>
-                ))}
-                
-                <div className="border-b border-zinc-800 pb-2 mb-2 mt-4">
-                  <h4 className="text-sm font-bold text-candy-yellow tracking-widest uppercase">🎵 音乐流链接设置 (MP3)</h4>
-                </div>
-                {[
-                  { key: 'song1', label: '《暗叫》MP3链接' },
-                  { key: 'song2', label: '《塵塵呪詛》MP3链接' },
-                  { key: 'song3', label: '《産声》MP3链接' },
-                  { key: 'song4', label: '《あなぐらぐらし》MP3链接' },
-                  { key: 'song5', label: '《イイコと妖狐》MP3链接' },
-                  { key: 'song6', label: '《愛して愛して愛して》MP3链接' },
-                ].map(({ key, label }) => (
-                  <div key={key}>
-                    <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-widest">{label}</label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-candy-yellow focus:ring-1 focus:ring-candy-yellow transition-all"
-                      value={editAudios[key as keyof typeof editAudios]} 
-                      onChange={(e) => setEditAudios({...editAudios, [key]: e.target.value})} 
-                    />
-                  </div>
-                ))}
 
-                <button 
-                  onClick={() => {
-                    setImages(editImages);
-                    setAudios(editAudios);
-                    setShowPanel(false);
-                  }} 
-                  className="mt-6 w-full bg-candy-pink text-black border-2 border-candy-pink hover:bg-black hover:text-candy-pink font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(255,0,127,0.3)] hover:shadow-[0_0_20px_rgba(255,0,127,0.5)] font-handwriting text-lg btn-hover-swap"
-                >
-                  应用修改！
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       <div className="relative z-10 max-w-[1440px] mx-auto">
         {/* Navigation */}
