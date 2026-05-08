@@ -38,14 +38,17 @@ export default function App() {
   const [immersiveAlbumId, setImmersiveAlbumId] = useState<number | null>(null);
   const [showPanel, setShowPanel] = useState(false);
   const [showMVPanel, setShowMVPanel] = useState(false);
+  const [isDraggingSinger, setIsDraggingSinger] = useState(false);
+  const [singerTrail, setSingerTrail] = useState<Array<{ id: number; x: number; y: number; img: string; rotate: number }>>([]);
+  const [activeTheaterMV, setActiveTheaterMV] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const mvList = [
-    { title: "星くずの掃除婦 (Stardust Cleaning Lady)", year: "2024", url: "https://www.youtube.com/watch?v=0k5aVp2C-p8", img: "/nishui.png" },
-    { title: "Miku (2024 Version)", year: "2024", url: "https://www.youtube.com/watch?v=R9p9p0YyC4o", img: "/1.png" },
-    { title: "Astronomy", year: "2023", url: "https://www.youtube.com/watch?v=8X2X2Y9xI0U", img: "/2.png" },
-    { title: "カラカラカラのカラ (Kara Kara Kara no Kara)", year: "2019", url: "https://www.youtube.com/watch?v=E_S_F47mI6w", img: "/3.png" },
-    { title: "愛して愛して愛して (Love Me, Love Me, Love Me)", year: "2015", url: "https://www.youtube.com/watch?v=PVWv-vN9EWA", img: "/vinylCover1" },
+    { title: "Love Me, Love Me, Love Me", year: "2015", url: "https://www.youtube.com/watch?v=NTrm_idbhUk", img: "/1.png" },
+    { title: "I'm Sorry, I'm Sorry", year: "2013", url: "https://www.youtube.com/watch?v=I1mOeAtPkgk", img: "/2.png" },
+    { title: "You're a Useless Child", year: "2013", url: "https://www.youtube.com/watch?v=nPF7lit7Z00", img: "/3.png" },
+    { title: "Corpse Dance", year: "2015", url: "https://www.youtube.com/watch?v=O9eHRiaTuL4", img: "/4.png" },
+    { title: "Hole-Dwelling", year: "2018", url: "https://www.youtube.com/watch?v=I15sK7dNMOM", img: "/nishui.png" },
   ];
 
   // Hide browser media controls from system notification area
@@ -159,6 +162,47 @@ export default function App() {
 
   const activeSong = albums[activeSongIdx];
   const activeCoverUrl = images[activeSong.coverKey as keyof typeof images];
+  const singerTrailImages = ["/kikuo1.jpg", "/kikuo2.jpg", "/kikuo3.jpg", "/kikuo4.jpg", "/kikuo5.jpg", "/kikuo6.jpg", "/kikuo7.jpg"];
+  const playDreamCardSound = (tone: number) => {
+    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(tone, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(tone * 0.52, ctx.currentTime + 0.28);
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.28, ctx.currentTime + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.36);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.38);
+    window.setTimeout(() => ctx.close(), 520);
+  };
+  const goToYouTube = (url: string) => {
+    window.open(url, "_self");
+    window.setTimeout(() => {
+      window.location.assign(url);
+    }, 80);
+  };
+  const addSingerTrailImage = (x: number, y: number) => {
+    const id = Date.now() + Math.random();
+    setSingerTrail(prev => [
+      ...prev.slice(-26),
+      {
+        id,
+        x,
+        y,
+        img: singerTrailImages[Math.floor(Math.random() * singerTrailImages.length)],
+        rotate: Math.random() * 34 - 17
+      }
+    ]);
+    window.setTimeout(() => {
+      setSingerTrail(prev => prev.filter(spot => spot.id !== id));
+    }, 1400);
+  };
 
   const allAlbums = [
     { 
@@ -1271,8 +1315,187 @@ export default function App() {
             MADLY MADE WITH <Skull className="w-5 h-5 text-candy-pink animate-bounce" /> FOR KIKUO.
           </p>
         </footer>
+
+        {/* Added Page 1: MV Theater */}
+        <section className="min-h-screen bg-black text-white relative overflow-hidden border-t-4 border-candy-pink">
+          <div className="absolute inset-0 opacity-25" style={{ filter: 'url(#crayon)' }}>
+            <div className="absolute top-16 left-8 w-40 h-40 border-[18px] border-candy-pink rounded-full rotate-12" />
+            <div className="absolute bottom-20 right-12 w-52 h-52 border-[14px] border-candy-lime clip-triangle rotate-45" />
+            <div className="absolute top-1/3 right-1/4 w-28 h-28 bg-candy-yellow mix-blend-screen rotate-12" />
+          </div>
+          <div className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+              <div>
+                <p className="font-mono text-candy-pink tracking-[0.5em] text-xs uppercase mb-5">MV PAGE / DARK FAIRY TALE SCREENING</p>
+                <h2 className="font-display text-5xl md:text-8xl leading-tight text-white hover-glitch">MV THEATER</h2>
+              </div>
+              <p className="max-w-xl text-zinc-400 font-handwriting text-2xl leading-relaxed">
+                用黑底、噪声、霓虹色和失控童话感，把 Kikuo 的影像作品放进一间午夜放映厅。
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-[1.45fr_0.75fr] gap-6">
+              <div className="relative aspect-video bg-zinc-950 border-2 border-candy-pink shadow-[0_0_60px_rgba(255,0,127,0.18)] overflow-hidden">
+                <img
+                  key={mvList[activeTheaterMV].img}
+                  src={mvList[activeTheaterMV].img.startsWith('/') ? mvList[activeTheaterMV].img : images[mvList[activeTheaterMV].img as keyof typeof images]}
+                  className="absolute inset-0 w-full h-full object-cover opacity-80"
+                  alt=""
+                />
+                <div className="absolute inset-0 bg-black/45 mix-blend-multiply" />
+                <div className="absolute inset-0" style={{ filter: 'url(#crayon)' }}>
+                  <div className="absolute left-10 top-10 w-40 h-40 border-[14px] border-candy-lime rounded-full rotate-12 opacity-80" />
+                  <div className="absolute right-12 bottom-12 w-32 h-32 bg-candy-yellow mix-blend-screen rotate-45 opacity-70" />
+                </div>
+                <div className="absolute left-6 right-6 bottom-24 md:bottom-20">
+                  <p className="font-mono text-candy-lime text-xs tracking-[0.4em] uppercase mb-3">{mvList[activeTheaterMV].year}</p>
+                  <h3 className="font-handwriting text-4xl md:text-6xl text-white leading-tight max-w-3xl hover-glitch">
+                    {mvList[activeTheaterMV].title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => goToYouTube(mvList[activeTheaterMV].url)}
+                  className="absolute left-6 bottom-6 z-30 inline-flex items-center gap-3 bg-candy-pink text-black px-5 py-4 font-mono text-xs font-bold tracking-[0.25em] uppercase hover:bg-white transition-colors"
+                >
+                  <Youtube className="w-5 h-5" />
+                  PLAY ON YOUTUBE
+                </button>
+              </div>
+              <div className="grid gap-4">
+                {mvList.slice(0, 4).map((mv, idx) => (
+                  <div
+                    key={mv.title}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setActiveTheaterMV(idx)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setActiveTheaterMV(idx);
+                    }}
+                    className={`group grid grid-cols-[96px_1fr] gap-4 bg-zinc-950/80 border p-3 transition-all text-left ${
+                      activeTheaterMV === idx ? 'border-candy-pink' : 'border-white/10 hover:border-candy-pink'
+                    }`}
+                  >
+                    <div className="relative h-24 overflow-hidden bg-black">
+                      <img src={mv.img.startsWith('/') ? mv.img : images[mv.img as keyof typeof images]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                      <Youtube className="absolute inset-0 m-auto w-8 h-8 text-white/70 group-hover:text-candy-pink transition-colors" />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                      <span className="text-[10px] text-candy-lime tracking-[0.35em] font-mono uppercase">NO.{idx + 1} / {mv.year}</span>
+                      <h3 className="mt-2 font-handwriting text-xl text-white leading-tight">{mv.title}</h3>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToYouTube(mv.url);
+                        }}
+                        className="mt-3 inline-flex w-fit text-[9px] font-mono text-candy-pink tracking-[0.25em] uppercase hover:text-white transition-colors"
+                      >
+                        YouTube 外链
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Added Page 2: Drag Singer Reveal */}
+        <section
+          className="min-h-screen bg-black text-white relative overflow-hidden cursor-grab active:cursor-grabbing border-t border-white/10 select-none"
+          onPointerDown={(e) => {
+            setIsDraggingSinger(true);
+            addSingerTrailImage(e.clientX, e.clientY);
+          }}
+          onPointerMove={(e) => {
+            if (isDraggingSinger) addSingerTrailImage(e.clientX, e.clientY);
+          }}
+          onPointerUp={() => setIsDraggingSinger(false)}
+          onPointerLeave={() => setIsDraggingSinger(false)}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,127,0.12),transparent_45%)]" />
+          {singerTrail.map((spot) => (
+            <motion.img
+              key={spot.id}
+              src={spot.img}
+              initial={{ opacity: 0, scale: 0.55, rotate: spot.rotate }}
+              animate={{ opacity: 1, scale: 1, rotate: spot.rotate }}
+              exit={{ opacity: 0 }}
+              className="fixed z-[90] w-28 h-28 md:w-40 md:h-40 object-cover border-2 border-white shadow-[0_0_35px_rgba(57,255,20,0.25)] pointer-events-none"
+              style={{ left: spot.x, top: spot.y, transform: `translate(-50%, -50%) rotate(${spot.rotate}deg)` }}
+            />
+          ))}
+          <div className="relative z-10 min-h-screen flex flex-col items-center justify-center text-center px-6">
+            <p className="font-mono text-candy-lime tracking-[0.5em] text-xs uppercase mb-6">DRAG TO REVEAL / KIKUO IMAGE RITUAL</p>
+            <h2 className="font-display text-5xl md:text-8xl leading-tight text-white hover-glitch">BLACK ROOM</h2>
+            <p className="max-w-2xl mt-8 text-zinc-400 font-handwriting text-2xl md:text-3xl leading-relaxed">
+              按住鼠标拖动，黑色底幕会留下歌手影像。像把照片从噪声里一张张拖出来。
+            </p>
+            <div className="mt-12 flex items-center gap-4 text-candy-pink font-mono text-xs tracking-[0.35em] uppercase">
+              <Hand className="w-5 h-5" />
+              hold and drag
+            </div>
+          </div>
+        </section>
+
+        {/* Added Page 3: Freeform Dream Index */}
+        <section className="min-h-screen bg-zinc-950 text-white relative overflow-hidden border-t-4 border-dashed border-candy-lime">
+          <div className="absolute inset-0 opacity-20" style={{ filter: 'url(#crayon)' }}>
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className={`absolute border-4 ${i % 2 ? 'border-candy-yellow' : 'border-candy-orange'} rounded-full`}
+                style={{
+                  width: `${120 + i * 60}px`,
+                  height: `${120 + i * 60}px`,
+                  left: `${8 + i * 14}%`,
+                  top: `${10 + (i % 3) * 24}%`
+                }}
+              />
+            ))}
+          </div>
+          <div className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+            <div className="mb-16">
+              <p className="font-mono text-candy-yellow tracking-[0.5em] text-xs uppercase mb-5">FREE PAGE / GROTESQUE FAIRY TALE INDEX</p>
+              <h2 className="font-display text-5xl md:text-8xl leading-tight text-white hover-glitch">DREAM INDEX</h2>
+              <p className="max-w-3xl mt-8 text-zinc-400 font-handwriting text-2xl md:text-3xl leading-relaxed">
+                一个自由发挥的主题索引页，把“暗黑童话、电子狂气、怪诞可爱、宗教仪式感、迷幻音乐档案”拆成五个可凝视的入口。
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-5 gap-4">
+              {[
+                ["暗黑童话", "BLACK FAIRY TALE", "bg-candy-pink", "甜美外壳下藏着不安的回声。", 180],
+                ["电子狂气", "ELECTRIC MANIA", "bg-candy-lime", "节拍像坏掉的游乐设施一样旋转。", 260],
+                ["怪诞可爱", "CUTE GROTESQUE", "bg-candy-yellow", "糖果色、手写字和危险的笑脸并置。", 340],
+                ["宗教仪式感", "RITUAL LIGHT", "bg-cyan-500", "像从黑色教堂里升起的合成器光。", 430],
+                ["迷幻档案", "PSYCHE ARCHIVE", "bg-candy-orange", "把歌曲、影像、记忆和噪声封存。", 520]
+              ].map(([title, en, color, desc, tone]) => (
+                <motion.div
+                  key={title}
+                  whileHover={{ y: -12, rotate: -2 }}
+                  whileTap={{ scale: 0.96, rotate: 1 }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => playDreamCardSound(Number(tone))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") playDreamCardSound(Number(tone));
+                  }}
+                  className="min-h-[360px] bg-black border border-white/10 hover:border-white p-5 flex flex-col justify-between transition-colors cursor-pointer"
+                >
+                  <div>
+                    <div className={`w-12 h-12 ${color} rounded-full mb-8`} />
+                    <h3 className="font-handwriting text-3xl text-white leading-tight">{title}</h3>
+                    <p className="font-mono text-[10px] tracking-[0.35em] text-zinc-500 mt-3 uppercase">{en}</p>
+                  </div>
+                  <p className="text-zinc-400 font-mono text-sm leading-relaxed">{desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
 }
-
